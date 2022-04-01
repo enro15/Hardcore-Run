@@ -120,12 +120,13 @@ function setup(t: text, p: player):
 		broadcast "{@P} Hardcore run is all setup!"
 		set {serverState} to "Waiting"
 	if {_t} is "start":
+		add 1 to {runCounter}
 		make {_p} execute "/worldborder set 250 9"
 		loop all players:
 			apply slowness 100 to loop-player for 10 seconds
 		loop 10 times:
 			set {_i} to 11 - loop-number
-			broadcast "{@P} Starting Hardcore run in 10..."
+			broadcast "{@P} Starting Hardcore Run %{runCounter}% in 10..."
 			title("%{_i}%", "red")
 			wait 1 second
 		broadcast "{@P} Hardcore run is now starting!"
