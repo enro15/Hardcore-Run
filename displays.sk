@@ -1,0 +1,42 @@
+
+function actionBar(display: text, color: text):
+	command "/title @a actionbar {"text":"%{_display}%","bold":true,"color":"%{_color}%"}"
+
+function title(display: text, color: text):
+	command "/title @a title {"text":"%{_display}%","bold":true,"color":"%{_color}%"}"
+
+every second:	
+	if {Hardcore::Running} is true:
+		add 1 to {Hardcore::Timer}
+		if {Hardcore::Timer} < 60:
+			actionBar("%{Hardcore::Timer}% secs", "red")
+		else:
+			if {Hardcore::Timer} is divisible by 60:
+				if {Hardcore::Timer} is less than 3599:
+					set {_mins} to {Hardcore::Timer}/60
+					actionBar("%{_mins}% mins", "red")
+				else:
+					if {Hardcore::Timer} is divisible by 3600:
+						set {_hrs} to {Hardcore::Timer}/3600
+						actionBar("%{_hrs}% hrs", "red")
+					else:
+						set {_t} to {Hardcore::Timer}/60
+						set {_tt::*} to split "%{_t}%" at "."
+						set {_hrs} to {_tt:1}
+						set {_ttt} to "0.%{_tt::2}%" parsed as number
+						set {_mins} to {_ttt}*60
+						set {_s} to {_mins}/60
+						set {_ss::*} to split "%{_s}%" at "."
+						set {_sss} to "0.%{_ss::2}%" parsed as number
+						set {_secs} to round(({_sss})*60)
+						set {_display} to "%{_hrs}% hrs, %{_mins}% mins, %{_secs}% secs"
+						actionBar("%{_display}%", "red")
+			else:
+				set {_t} to {Hardcore::Timer}/60
+				set {_tt::*} to split "%{_t}%" at "."
+				set {_mins} to "%{_tt::1}%"
+				set {_ttt} to "0.%{_tt::2}%" parsed as number
+				set {_secs} to round(({_ttt})*60)
+				set {_display} to "%{_mins}% mins, %{_secs}% secs"
+				actionBar("%{_display}%", "red")
+				
