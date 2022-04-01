@@ -1,0 +1,18 @@
+options:
+	P: &4&l[Hardcore]&c&l
+	
+function toggleGamemode(t: text, p: player):
+	if {gamemodes::%{_t}%} is not set:
+		set {gamemodes::%{_t}%} to true
+		broadcast "{@P} %{_t}% enabled"
+	else:
+		delete {gamemodes::%{_t}%}
+		broadcast "{@P} %{_t}% disabled"
+
+function enableAllScenarios(i: int = 0):
+	if {gamemodes::Among Us} is true:
+		command "/enableamongus"
+	if {gamemodes::Herobrine} is true:
+		command "/enableherobrine"
+
+	
