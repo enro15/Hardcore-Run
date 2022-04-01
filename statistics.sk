@@ -1,0 +1,142 @@
+options:
+	P: &4&l[Hardcore]&c&l
+	
+function setRunCounter(i: int):
+	set {runCounter} to {_i}
+	
+on death of player:
+	if {Hardcore::Running} is true:
+		if {Hardcore::isDead::%victim%} is not set:
+			set {Hardcore::isDead::%victim%} to true
+			set {_i} to {runCounter}
+			set {stats::%uuid of victim%::died::%{_i}%} to "&eYes"
+			set {stats::%uuid of victim%::death::%{_i}%} to "&e%death message%"
+			set {stats::%uuid of victim%::timedied::%{_i}%} to now
+			set {stats::%uuid of victim%::timealive::%{_i}%} to (difference between now and {Hardcore::TimeStarted})
+			send "&8&m-------------------------------------"
+			send "{@P} YOU HAVE DIED!"
+			send "&eCause of Death: &f%death message%"
+			send "&eTime Died: &f%now%"
+			send "&eTime Spent Alive: &f%{stats::%uuid of victim%::timealive::%{_i}%}%"
+			send " "
+			send "&eYou should be in &bSPECTATOR mode &enow"
+			send "&eLeft-click to &bRandom TP to someone"
+			send "&eRight-click to &bView Inventories"
+			send " "
+			send "&c&lTHANK YOU FOR PLAYING!"
+			send "&8&m-------------------------------------"
+			
+on death of enderdragon:
+	if {Hardcore::Running} is true:
+		loop all players:
+			if loop-player's gamemode is survival:
+				if {Hardcore::isDead::%loop-player%} is not set:
+					add loop-player to {_winners::*}
+					set {stats::%uuid of loop-player%::died::%{runCounter}%} to "&eNo"
+					set {stats::%uuid of loop-player%::death::%{runCounter}%} to "&eN/A"
+					set {stats::%uuid of victim%::timedied::%{_i}%} to "&eN/A"
+					set {stats::%uuid of loop-player%::timealive::%{runCounter}%} to (difference between now and {Hardcore::TimeStarted})
+		broadcast "{@P} Run ##%{runCounter}% has concluded!"
+		broadcast "{@P} Winners: &6&l%{_winners::*}%"
+		broadcast "{@P} Thanks for playing!"
+		set {stats::%{runCounter}%::time} to (difference between now and {Hardcore::TimeStarted})
+		set {stats::%{runCounter}%::started} to {Hardcore::TimeStarted}
+		set {stats::%{runCounter}%::winners} to {_winners::*}
+		wait 10 seconds
+		loop all players:
+			if loop-player has permission "skript.op":
+				send "{@P} Restart the server to reset the run!" to loop-player
+		
+command /endrun:
+	permission: skript.op
+	trigger:
+		if {Hardcore::Running} is true:
+			loop all players:
+				if loop-player's gamemode is survival:
+					if {Hardcore::isDead::%loop-player%} is not set:
+						add loop-player to {_winners::*}
+						set {stats::%uuid of loop-player%::died::%{runCounter}%} to "&eNo"
+						set {stats::%uuid of loop-player%::death::%{runCounter}%} to "&eN/A"
+						set {stats::%uuid of victim%::timedied::%{_i}%} to "&eN/A"
+						set {stats::%uuid of loop-player%::timealive::%{runCounter}%} to (difference between now and {Hardcore::TimeStarted})
+			broadcast "{@P} Run ##%{runCounter}% has concluded!"
+			broadcast "{@P} Winners: &6&l%{_winners::*}%"
+			broadcast "{@P} Thanks for playing!"
+			set {stats::%{runCounter}%::time} to (difference between now and {Hardcore::TimeStarted})
+			set {stats::%{runCounter}%::started} to {Hardcore::TimeStarted}
+			set {stats::%{runCounter}%::winners} to {_winners::*}
+			wait 10 seconds
+			loop all players:
+				if loop-player has permission "skript.op":
+					send "{@P} Restart the server to reset the run!" to loop-player
+			
+command /runstats [<offlineplayer>]: # I CAN MAKE THIS A GUI IN THE FUTURE
+	trigger:
+		if arg 1 is not set:
+			sender command "/runstats %sender%"
+		else:
+			send "{@P} %arg-1%'s Hardcore stats:"
+			loop {runCounter} times:
+				set {_i} to loop-number
+				send "&8&m-------------------------------------"
+				send "&4&lHardcore Run ##%{_i}%"
+				send "&cDied: %{stats::%uuid of arg-1%::died::%{_i}%}%"
+				send "&cCause of Death: %{stats::%uuid of arg-1%::death::%{_i}%}%"
+				send "&cTime Died: &e%{stats::%uuid of arg-1%::timedied::%{_i}%}%"
+				send "&cTime Alive: &e%{stats::%uuid of arg-1%::timealive::%{_i}%}%"
+			send "&8&m-------------------------------------"
+			
+command /edittimedied [<offlineplayer>] [<int>] [<text>]:
+	permisson: skript.op
+	trigger:
+		if arg 1 is not set:
+			stop
+		if arg 2 is not set:
+			stop
+		if arg 3 is not set:
+			stop
+		set {stats::%uuid of arg-1%::timedied::%arg-2%} to "%arg-3%"
+		send "{@P} For run ##%arg-2%, player %arg-1% died at %arg-3%"
+
+command /edittimealive [<offlineplayer>] [<int>] [<text>]:
+	permisson: skript.op
+	trigger:
+		if arg 1 is not set:
+			stop
+		if arg 2 is not set:
+			stop
+		if arg 3 is not set:
+			stop
+		set {stats::%uuid of arg-1%::timealive::%arg-2%} to "%arg-3%"
+		send "{@P} For run ##%arg-2%, player %arg-1% lived for %arg-3%"
+		
+command /editdied [<offlineplayer>] [<int>] [<text>]:
+	permisson: skript.op
+	trigger:
+		if arg 1 is not set:
+			stop
+		if arg 2 is not set:
+			stop
+		if arg 3 is not set:
+			stop
+		set {stats::%uuid of arg-1%::died::%arg-2%} to "&e%arg-3%"
+		send "{@P} For run ##%arg-2%, player %arg-1% died is now %arg-3%"
+
+command /editdeathmessage [<offlineplayer>] [<int>] [<text>]:
+	permisson: skript.op
+	trigger:
+		if arg 1 is not set:
+			stop
+		if arg 2 is not set:
+			stop
+		if arg 3 is not set:
+			stop
+		set {stats::%uuid of arg-1%::timedied::%arg-2%} to "%arg-3%"
+		send "{@P} For run ##%arg-2%, player %arg-1% has death message %arg-3%"
+
+		
+
+			
+
+				
+			
