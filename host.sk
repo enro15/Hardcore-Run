@@ -83,9 +83,9 @@ function setup(t: text, p: player):
 				else:
 					format slot {_i} of player with white stained glass pane named "&a&lSmall Gamemodes" with lore "|| &f&oUp to 3 small gamemodes can be enabled at once|| " to be unstealable
 		# - SMALL GAMEMODES: UP TO 3 MAY BE ENABLED - #	
-#TBC	format slot 10 of player with enchanting table named "&aNo Enchants" with lore "&f&oYou cannot use enchant tables.|| ||{@ToggleNormal}|| " to run toggleNoEnchants(sender)
-#TBC	format slot 11 of player with diamond named "&aNo Diamonds" with lore "&f&oYou cannot mine or use diamonds.|| ||{@ToggleNormal}|| " to run toggleNoDiamonds(sender)
-		format slot 12 of player with empty map named "&aIsolation" with lore "&f&oPlayers are scattered away from others.|| ||{@ToggleNormal}|| " to run player command "/isolation"
+#TBC	format slot 10 of player with enchanting table named "&aNo Enchants" with lore "&f&oYou cannot use enchant tables.|| ||{@ToggleNormal}|| " to run toggleGamemode("No Enchants", sender)
+#TBC	format slot 11 of player with diamond named "&aNo Diamonds" with lore "&f&oYou cannot mine or use diamonds.|| ||{@ToggleNormal}|| " to run toggleGamemode("No Diamonds", sender)
+		format slot 12 of player with empty map named "&aIsolation" with lore "&f&oPlayers are scattered away from others.|| ||{@ToggleNormal}|| " to run toggleGamemode("Isolation", sender)
 		# - #
 		loop 9 times:
 			set {_i} to loop-number + 17
@@ -97,8 +97,8 @@ function setup(t: text, p: player):
 				else:
 					format slot {_i} of player with white stained glass pane named "&6&lBig Gamemodes" with lore "|| &f&oOnly one big gamemode at once|| " to be unstealable
 		# - BIG GAMEMODES - #
-		format slot 27 of player with leather helmet named "&aAmong Us" with lore "&f&o2 Imposters, they can sabotage||{@ToggleNormal}||" to run player command "/amongus"		
-#TBC	format slot 28 of player with diamond sword named "&aHerobrine" with lore "&f&o1 Herobrine, he has to kill everyone||{@ToggleNormal}|| " to run toggleHerobrine(sender)
+		format slot 27 of player with leather helmet named "&aAmong Us" with lore "&f&o2 Imposters, they can sabotage||{@ToggleNormal}||" to run toggleGamemode("Among Us", sender)		
+#TBC	format slot 28 of player with diamond sword named "&aHerobrine" with lore "&f&o1 Herobrine, he has to kill everyone||{@ToggleNormal}|| " to run toggleGamemode("Herobrine", sender)
 		# - WORLD GAMEMODES - #
 		loop 9 times:
 			set {_i} to loop-number + 35
