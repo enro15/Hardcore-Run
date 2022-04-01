@@ -98,13 +98,14 @@ command /runstats [<offlineplayer>]: # I CAN MAKE THIS A GUI IN THE FUTURE
 		else:
 			send "{@P} %arg-1%'s Hardcore stats:"
 			loop {runCounter} times:
-				set {_i} to loop-number
-				send "&8&m-------------------------------------"
-				send "&4&lHardcore Run ##%{_i}%"
-				send "&cDied: %{stats::%uuid of arg-1%::died::%{_i}%}%"
-				send "&cCause of Death: %{stats::%uuid of arg-1%::death::%{_i}%}%"
-				send "&cTime Died: &e%{stats::%uuid of arg-1%::timedied::%{_i}%}%"
-				send "&cTime Alive: &e%{stats::%uuid of arg-1%::timealive::%{_i}%}%"
+				if {stats::%uuid of arg-1%::died::%loop-number%} is set:
+					set {_i} to loop-number
+					send "&8&m-------------------------------------"
+					send "&4&lHardcore Run ##%{_i}%"
+					send "&cDied: %{stats::%uuid of arg-1%::died::%{_i}%}%"
+					send "&cCause of Death: %{stats::%uuid of arg-1%::death::%{_i}%}%"
+					send "&cTime Died: &e%{stats::%uuid of arg-1%::timedied::%{_i}%}%"
+					send "&cTime Alive: &e%{stats::%uuid of arg-1%::timealive::%{_i}%}%"
 			send "&8&m-------------------------------------"
 			
 command /edittimedied [<offlineplayer>] [<int>] [<text>]:
