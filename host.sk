@@ -134,6 +134,7 @@ function setup(t: text, p: player):
 		set {serverState} to "Running"
 		set {Hardcore::Running} to true
 		set {Hardcore::Timer} to 0
+		set {Hardcore::StartTime} to now
 		enableAllGamemodes()
 
 
