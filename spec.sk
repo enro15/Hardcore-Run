@@ -1,0 +1,167 @@
+options:
+	P: &4&l[Hardcore]&c&l
+	Spec: &9&l[Spec]&b&l
+	L: &8&m--------------------------------
+	A: &8»&7
+	Ores: &e&l[Mining]&7
+	Damage: &6&l[Damage]&7
+	World: &2&l[Worlds]&7
+	Death: &4&l[Death]&7
+	PvP: &c&l[PvP]&7
+
+on load:
+	delete {SI::*}
+	delete {ores::*}
+	
+	
+command /invsee [<player>]:
+	aliases: /inv, /inventory
+	trigger:
+		if sender's gamemode is not spectator:
+			send "{@Spec} You need to be in Spectator mode to view inventories"
+			stop
+		open chest with 6 rows named "&8(&9Inv&8) &b&o%arg 1%" to player
+		loop integers from 0 to 17:
+			format slot loop-integer of player with gray stained glass pane named " " to be unstealable
+		while inventory name of player's current inventory is "&8(&9Inv&8) &b&o%arg 1%":
+
+			loop integers from 0 to 35:
+				add (slot loop-integer of arg-1) to {SI::inv::invent::%arg 1%::*}
+
+			format slot 0 of player with helmet of arg-1 to be unstealable
+			format slot 1 of player with chestplate of arg-1 to be unstealable
+			format slot 2 of player with leggings of arg-1 to be unstealable
+			format slot 3 of player with boots of arg-1 to be unstealable
+			format slot 4 of player with tool of arg-1 to be unstealable
+	
+			set {SI::inv::potions::*} to all of the active potion effects on argument-1
+			set {_health} to health of arg-1
+			set {_coords} to location of arg-1
+			if {SI::inv::potions::*} is not set:
+				set {_pots} to "&cNone"
+			else:
+				set {_pots} to Capital("%{SI::inv::potions::*}%")
+			format slot 6 of player with grass block named "&9&oPlayer Info" with lore "{@L}|| || &8&l• World {@A} &b%world of arg-player%|||| &8&l• &7Ping {@A} %{ping::%arg-1%}%ms||||{@L}" to be unstealable
+
+			format slot 7 of player with book named "&9&oBasic Info" with lore "{@L}|||| &8&l• &7Health {@A} %{_health}%|| &8&l• &7Food Level {@A} &b%food level of arg-1%&8/&910|| &8&l• &7Location {@A} &b%location of arg-1%|| &8&l• &7XP {@A} &b%level of arg-1%&8/&9%{SI::levels::%uuid of arg-player%}%||||&8&l• &7Potion Effects:|| {@A} &b%{_pots}%||||{@L}" to be unstealable
+			set {_c} to 18
+			loop {SI::inv::invent::%arg 1%::*}:
+			
+				format slot {_c} of player with loop-value to be unstealable
+				add 1 to {_c}
+			delete {SI::inv::invent::%arg 1%::*}
+			delete {SI::inv::potions::*}
+			wait 3 ticks
+			loop integers from 18 to 53:
+				format slot loop-integer of player with air to be unstealable
+		
+# SPEC INFO
+
+function sendSpecInfo(t: text):
+	loop all players:
+		if loop-player's gamemode is spectator:
+			send "%{_text}%" to loop-player
+
+on rightclick:
+	if player's gamemode is spectator:
+		if player's target is a player:
+			if player's target gamemode is survival:
+				player command "/inv %player's target%"
+				
+every 30 seconds:
+	{Hardcore::Running} is true
+	loop all players:
+		if {SI::levels::%uuid of loop-player%} is set:
+			if level of loop-player is greater than {SI::levels::%uuid of loop-player%}:
+				set {SI::levels::%uuid of loop-player%} to level of loop-player
+		else:
+			set {SI::levels::%uuid of loop-player%} to level of loop-player
+
+on leftclick:
+	if player's gamemode is spectator:
+		loop all players:
+			if loop-player's gamemode is not spectator:
+				add loop-player to {_tp::*}
+		if (size of {_tp::*}) = 0:
+			send "{@Spec} No players to TP to. WTF!"
+			stop
+		set {_player} to (random element out of {_tp::*})
+		teleport player to {_player}
+		send "{@Spec} You teleported to &a%{_player}%"
+
+on damage:
+	if {Hardcore::Running} is true:
+		victim's gamemode is not creative
+
+		if {SpecInfo::LastDamage::%victim%} is set:
+			if {SpecInfo::LastDamage::%victim%} was less than 0.15 seconds ago:
+				stop
+		set {SpecInfo::LastDamage::%victim%} to now
+		set {_specinfodamage} to health of victim			
+		wait 1 tick
+		set {_specinfodamage} to {_specinfodamage}-(health of victim)
+		if {_specinfodamage} is greater than 0:
+			wait 1 tick
+			victim is not dead
+			if attacker is a player:
+				sendSpecInfo("{@PvP} &c%attacker% &8[&c%health of attacker% HP&8] &7attacked &a%victim% &8[&a%health of victim%&8] &8(&b%{_specinfodamage}% HP damage)")
+			else:
+				if attacker is not set:
+					sendSpecInfo("{@PvE} &a%victim% &8[&a%health of victim% HP&8] &btook &c%{_specinfodamage}% &bHP damage from &c%damage cause%")
+				else if attacker is set:
+					sendSpecInfo("{@PvE} &a%victim% &8[&a%health of victim% HP&8] &btook &c%{_specinfodamage}% &bHP damage from &c%attacker%")
+
+on death of player:
+	if {Hardcore::Running} is true:
+		sendSpecInfo("{@Death} &a%victim% &bhas died at &c%location of victim%")
+
+on mine of diamond ore:
+	if {Hardcore::Running} is true:
+		if {ores::found::%x-coordinate of loop-block%::%y-coordinate of loop-block%::%z-coordinate of loop-block%} is set:
+			stop
+		set {_amt} to 1
+		loop all blocks in radius 3 around event-block:
+			loop-block is diamond ore
+			set {ores::found::%x-coordinate of loop-block%::%y-coordinate of loop-block%::%z-coordinate of loop-block%} to true
+			add 1 to {_amt}
+		sendSpecInfo("{@Ores} &a%player% &bfound &9%{_amt}% Diamonds")
+		
+on mine of gold ore:
+	if {Hardcore::Running} is true:
+		if {ores::found::%x-coordinate of loop-block%::%y-coordinate of loop-block%::%z-coordinate of loop-block%} is set:
+			stop
+		set {_amt} to 1
+		loop all blocks in radius 3 around event-block:
+			loop-block is gold ore
+			set {ores::found::%x-coordinate of loop-block%::%y-coordinate of loop-block%::%z-coordinate of loop-block%} to true
+			add 1 to {_amt}
+		sendSpecInfo("{@Ores} &a%player% &bfound &6%{_amt}% Gold")
+		
+on mine of ancient debris:
+	if {Hardcore::Running} is true:
+		if {ores::found::%x-coordinate of loop-block%::%y-coordinate of loop-block%::%z-coordinate of loop-block%} is set:
+			stop
+		set {_amt} to 1
+		loop all blocks in radius 3 around event-block:
+			loop-block is ancient debris
+			set {ores::found::%x-coordinate of loop-block%::%y-coordinate of loop-block%::%z-coordinate of loop-block%} to true
+			add 1 to {_amt}
+		sendSpecInfo("{@Ores} &a%player% &bfound &4%{_amt}% Netherite")
+		
+on world change:
+	wait 3 ticks
+	player's gamemode is not spectator
+	if {Hardcore::Running} is true:
+		if "%world of player%" contains "nether":
+			sendSpecInfo("{@World} &a%player% &bis now in the &cNether")
+		else if "%world of player%" contains "end":
+			sendSpecInfo("{@World} &a%player% &bis now in the &5End")
+		else:
+			sendSpecInfo("{@World} &a%player% &bis now in the &2Overworld")
+			
+		
+		
+		
+		
+		
+			

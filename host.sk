@@ -1,0 +1,61 @@
+options:
+	P: &4&l[Hardcore]&c&l
+
+on load:
+	delete {Hardcore::*}
+	set {serverState} to "Not Running"
+
+command /host:
+	permission: skript.op
+	trigger:
+		open chest with 1 rows named "&4&lHost GUI" to sender
+		format slot 0 of player with grass block named "&a&lSet Up Worlds" with lore "|| &cYour World: &l%world of sender%|| &cIf you do not want to setup in this world, || &cswitch worlds then setup. || "to run function setup("worlds", sender)
+		format slot 1 of player with book named "&a&lGamerules" with lore "|| &cSETUP WORLD BEFORE GAMERULES || " to run function setup("rules", sender)
+		format slot 2 of player with chest named "&a&lGamemodes" with lore "|| &cSETUP WORLD & GAMERULES BEFORE THIS || " to run function setup("gamemodes", sender)
+		format slot 3 of player with iron ingot named "&a&lFinish Setup" with lore "|| &cDO STEPS 1-3 FIRST! ||" to run function setup("finish", sender)
+		format slot 8 of player with lever named "&a&lStart Run" with lore " || &cMAKE SURE YOU'RE SETUP FIRST! || " to run function setup("start", sender)
+
+function setup(t: text, p: player):
+	if {_t} is "worlds":
+		set {_w} to world of {_p}
+		send "{@P} Starting setup of Hardcore world. Using world '%{_w}%'. DO NOT MOVE!!!" to {_p}
+		send "{@P} Note that this procedure will kill you." to {_p}
+		set {Hardcore::World::Overworld} to world of {_p}
+		set {Hardcore::World::Nether} to ("%{_w}%_nether" parsed as world)
+		set {Hardcore::World::End} to ("%{_w}%_the_end" parses as world)
+		kill {_p}
+		wait 3 seconds
+		if {_p} is dead:
+			send "{@P} There was an error with setting the world, contact @Enroh#8089 on Discord." to {_p}
+			delete {Hardcore::World::*}
+			stop
+		make {_p} execute "/time set day"
+		make {_p} execute "/worldborder center ~ ~ ~"
+		make {_p} execute "/worldborder set 9"
+		wait 2 seconds
+		send "{@P} World is set up. Go onto the next step, with the gamerules."
+	if {_t} is "rules":
+		make {_p} execute "/gamerule doDaylightCycle false"
+		make {_p} execute "/gamerule spawnRadius 0"
+		make {_p} execute "/gamerule showDeathMessages false"
+		make {_p} execute "/gamerule doInsomnia false"
+		make {_p} execute "/gamerule announceAdvancements false"
+		wait 1 second
+		teleport {_p} to location(0, 128, 0, world {Hardcore::World::Nether})
+		wait 2 seconds
+		make {_p} execute "/gamerule doDaylightCycle false"
+		make {_p} execute "/gamerule spawnRadius 0"
+		make {_p} execute "/gamerule showDeathMessages false"
+		make {_p} execute "/gamerule doInsomnia false"
+		make {_p} execute "/gamerule announceAdvancements false"
+		wait 1 second
+		teleport {_p} to location(0, 128, 0, world {Hardcore::World::End})
+		wait 2 seconds
+		make {_p} execute "/gamerule doDaylightCycle false"
+		make {_p} execute "/gamerule spawnRadius 0"
+		make {_p} execute "/gamerule showDeathMessages false"
+		make {_p} execute "/gamerule doInsomnia false"
+		make {_p} execute "/gamerule announceAdvancements false"
+		wait 2 seconds
+		kill {_p}
+		broadcast "{@P} Gamerules are setup!"
