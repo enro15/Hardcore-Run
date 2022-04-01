@@ -25,6 +25,19 @@ on death of player:
 			send " "
 			send "&c&lTHANK YOU FOR PLAYING!"
 			send "&8&m-------------------------------------"
+			wait 3 seconds
+			loop all players:
+				if loop-player's gamemode is survival:
+					if {Hardcore::isDead::%loop-player%} is not set:
+						add 1 to {_i}
+			if {_i} is 0:
+				set {stats::%{runCounter}%::time} to (difference between now and {Hardcore::TimeStarted})
+				set {stats::%{runCounter}%::started} to {Hardcore::TimeStarted}
+				set {stats::%{runCounter}%::winners} to "&eEnder Dragon"
+				broadcast "{@P} Run ##%{runCounter}% Completed! Winner: ENDER DRAGON"
+				broadcast "{@P} Thanks for playing!"
+						
+			
 			
 on death of enderdragon:
 	if {Hardcore::Running} is true:
@@ -73,7 +86,15 @@ command /endrun:
 command /runstats [<offlineplayer>]: # I CAN MAKE THIS A GUI IN THE FUTURE
 	trigger:
 		if arg 1 is not set:
-			sender command "/runstats %sender%"
+			send "{@P} Overall Run Stats"
+			loop {runCounter} times:
+				set {_i} to loop-number
+				send "&8&m-------------------------------------"
+				send "&4&lHardcore Run ##%{_i}%"
+				send "&cStarted At: &e%{stats::%{_i}%::started}%"
+				send "&cTime Took: &e%{stats::%{_i}%::time}
+				send "&cWinners: &e%{stats::%{_i}%::winners}%
+			send "&8&m-------------------------------------"
 		else:
 			send "{@P} %arg-1%'s Hardcore stats:"
 			loop {runCounter} times:
@@ -133,6 +154,36 @@ command /editdeathmessage [<offlineplayer>] [<int>] [<text>]:
 			stop
 		set {stats::%uuid of arg-1%::timedied::%arg-2%} to "%arg-3%"
 		send "{@P} For run ##%arg-2%, player %arg-1% has death message %arg-3%"
+
+command /editstarted [<int>] [<text>]:
+	permisson: skript.op
+	trigger:
+		if arg 1 is not set:
+			stop
+		if arg 2 is not set:
+			stop
+		set {stats::%arg-1%::started} to "%arg-2%"
+		send "{@P} Set time started for run %arg-1% to %arg-2%"
+
+command /editelapsed [<int>] [<text>]:
+	permisson: skript.op
+	trigger:
+		if arg 1 is not set:
+			stop
+		if arg 2 is not set:
+			stop
+		set {stats::%arg-1%::time} to "%arg-2%"
+		send "{@P} Set time took for run %arg-1% to %arg-2%"
+
+command /editwinners [<int>] [<text>]:
+	permisson: skript.op
+	trigger:
+		if arg 1 is not set:
+			stop
+		if arg 2 is not set:
+			stop
+		set {stats::%arg-1%::winners} to "%arg-2%"
+		send "{@P} Set winners of run %arg-1% to %arg-2%"
 
 		
 
