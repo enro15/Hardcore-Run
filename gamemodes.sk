@@ -1,6 +1,11 @@
 options:
 	P: &4&l[Hardcore]&c&l
 	
+on load:
+	delete {gamemodes::*}
+	delete {moles::*}
+	delete {inventors::*}
+	
 function toggleGamemode(t: text, p: player):
 	if {gamemodes::%{_t}%} is not set:
 		set {gamemodes::%{_t}%} to true
@@ -14,5 +19,159 @@ function enableAllScenarios(i: int = 0):
 		command "/enableamongus"
 	if {gamemodes::Herobrine} is true:
 		command "/enableherobrine"
+		
+# - AMONG US - #
+
+command /enableamongus:
+	permission: skript.op
+	trigger:
+		loop all players:
+			add loop-player to {_potMoles::*}
+		loop 2 times:
+			set {_mole::%loop-number%} to (random element out of {_potMoles::*})
+			set {moles::isMole::%{_mole::%loop-number%}%} to true
+			remove {_mole::%loop-number%} from {_potMoles::*}
+		loop all players:
+			if {moles::isMole::%loop-player%} is true:
+				add loop-player to {_tempMole::*}
+		loop all players:
+			if {moles::isMole::%loop-player%} is true:
+				send "{@Prefix} You are an impostor! Use /sabotage to sabotage the team!" to loop-player
+				send "{@Prefix} Impostors are: %{_tempMole::*}%" to loop-player
+		broadcast "{@Prefix} Impostors have been set!"
+		set {moles::isEnabled} to true
+		set {moles::sabotageTimer} to 120
+		set {moles::canSabotage} to false
+		set {moles::lastSabotage} to "Blockade"
+
+command /disableamongus:
+	permission: skript.op
+	trigger:
+		delete {moles::*}
+		broadcast "{@Prefix} Impostors reset!"
+
+# lights - 15 mins, oxygen 40 mins, blockade 10 mins, freeze 20 mins, time 45 mins
+
+command /sabotage [<text>]:
+	trigger:
+		if {moles::isMole::%sender%} is not set:
+			send "{@Prefix} No."
+			stop
+		if {moles::sabotageTimer} is greater than 1:
+			send "{@Prefix} You cannot sabotage yet!"
+			stop
+		if arg 1 is not set:
+			send "{@Prefix} Available Sabotages:"
+			send " "
+			send "&c/sabotage lights &7(15 min cooldown)"
+			send "&e&oBlinds the crewmates for 15 seconds"
+			send " "
+			send "&c/sabotage oxygen &7(40 min cooldown)"
+			send "&e&oPoisons the crewmates for 20 seconds"
+			send " "
+			send "&c/sabotage blockade &7(10 min cooldown)"
+			send "&e&oCrewmates unable to break blocks/open things for 15 seconds"
+			send " "
+			send "&c/sabotage freeze &7(20 min cooldown)"
+			send "&e&oCrewmates unable to move for 15 seconds"
+			send " "
+			send "&c/sabotage time &7(45 min cooldown)"
+			send "&e&oImpostors switch the time to night (dont waste during the night)"
+			send " "
+		if arg 1 is "lights":
+			sabotage("Lights", sender, 1200)
+		if arg 1 is "oxygen":
+			sabotage("Oxygen", sender, 2400)
+		if arg 1 is "blockade":
+			sabotage("Blockade", sender, 900)
+		if arg 1 is "freeze":
+			sabotage("Freeze", sender, 600)
+		if arg 1 is "time":
+			sabotage("Time", sender, 2700)
+
+function sabotage(t: text, p: player, i: int):
+	if {moles::sabotageTimer} > 1:
+		send "{@Prefix} You cannot sabotage at this time" to {_p}
+		stop
+	set {moles::lastSabotage} to "%{_t}%"
+	set {moles::sabotageTimer} to {_i}
+	send "{@Prefix} You sabotaged %{_t}%" to {_p}
+	broadcast "{@Prefix} The Impostors have sabotaged %{_t}%" 
+	loop all players:
+		if {moles::isMole::%loop-player%} is not set:
+			if {_t} is "Lights":
+				apply blindness 1 without any particles to loop-player for 15 seconds
+			if {_t} is "Oxygen":
+				apply poison 1 without any particles to loop-player for 20 seconds
+			if {_t} is "Blockade":
+				apply mining fatigue 5 without any particles to loop-player for 15 seconds
+				set {moles::blockaded::%loop-player%} to true
+			if {_t} is "Freeze":
+				apply slowness 256 without any particles to loop-player for 15 seconds
+				apply jump boost 256 without any particles to loop-player for 15 seconds
+	if {_t} is "Time":
+		command "/time set night"
+	delete {moles::stopSending}
+	wait 20 seconds
+	delete {moles::blockaded::*}
+		
+on rightclick:
+	if {moles::blockaded::%player%} is true:
+		cancel event
+	
+every second:
+	if {moles::sabotageTimer} is set:
+		remove 1 from {moles::sabotageTimer}
+		if {moles::sabotageTimer} < 1:
+			set {moles::canSabotage} to true
+			if {moles::stopSending} is not set:
+				loop all players:
+					if {moles::isMole::%loop-player%} is true:
+						send "{@Prefix} You guys can sabotage again" to loop-player
+				set {moles::stopSending} to true
+
+# - NO DIAMONDS / NO ENCHANTS - #
+
+on craft of enchantment table or anvil:
+	if {gamemodes::No Enchants} is true:
+		cancel event
+
+on mine of diamond ore:
+	if {gamemode::No Diamonds} is true:
+		cancel event
+		set event-block to air
+
+on rightclick on enchantment table or anvil:
+	if {gamemodes::No Enchants} is true:
+		cancel event
+
+on inventory close:
+	if {gamemodes::No Diamonds} is true:
+		loop all items in player's inventory:
+			if "%loop-item%" contains "diamond":
+				set loop-item to air
+
+# - INVENTORS - #
+
+on mine of diamond ore or gold ore or iron ore:
+	if {gamemodes::Inventors} is true:
+		cancel event
+		set event-block to air
+		
+on craft:
+	if {gamemodes::Inventors} is true:
+		if {inventors::crafted::%event-item%} is not set:
+			set {inventors::crafted::%event-item%} to true
+			broadcast "&c&l%player% &6&owas the first to craft &c&l%event-item%"
+			set {_c} to random integer between 0 and 100
+			if {_c} is between 15 and 60:
+				give 1 iron ingot to player
+			if {_c} is between 61 and 90:
+				give 1 gold ingot to player
+			if {_c} is between 91 and 100:
+				give 1 diamond to player
+
+		
+
 
 	
