@@ -1,9 +1,9 @@
 
 function actionBar(display: text, color: text):
-	command "/title @a actionbar {"text":"%{_display}%","bold":true,"color":"%{_color}%"}"
+	command "/title @a actionbar {""text"":""%{_display}%"","bold"":true,""color"":""%{_color}%""}"
 
 function title(display: text, color: text):
-	command "/title @a title {"text":"%{_display}%","bold":true,"color":"%{_color}%"}"
+	command "/title @a title {""text"":""%{_display}%"":,:""bold"":true,""color"":""%{_color}%""}"
 
 every second:	
 	if {Hardcore::Running} is true:
